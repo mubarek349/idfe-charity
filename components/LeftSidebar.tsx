@@ -45,17 +45,22 @@ export default function LeftSidebar({ isOpen, onToggle }: LeftSidebarProps) {
       {/* Sidebar */}
       <aside
         className={`
-        fixed left-0 top-0 h-full z-100
-        transform transition-all duration-300 ease-in-out
-        bg-white/95 backdrop-blur-md border-r border-gray-200 shadow-xl
-        ${isOpen ? "translate-x-0" : "-translate-x-full"}
-        lg:translate-x-0 lg:static lg:top-0 lg:h-screen
-        w-80  lg:hidden overflow-auto
-      `}
+    fixed top-0 h-full z-100
+    transform transition-all duration-300 ease-in-out
+    bg-white/95 backdrop-blur-md border border-gray-200 shadow-xl
+    ${
+      isOpen
+        ? "translate-x-0 md:translate-x-0"
+        : "translate-x-full md:-translate-x-full"
+    }
+    right-0 md:left-0 md:right-auto
+    w-80 overflow-y-auto scroll-smooth pr-1
+
+  `}
       >
         <div className="p-6 ">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8 lg:hidden sticky top-6 bg-white z-100">
+          <div className="flex items-center justify-between mb-8 sticky top-6 bg-white z-100">
             <div className="flex items-center gap-2 flex-shrink-0">
               <img src="/logo.png" alt="logo" className="w-10 h-10 " />
               <h1 className="text-2xl font-bold text-green-600">
