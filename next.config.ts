@@ -4,9 +4,6 @@ const nextConfig: NextConfig = {
   // Enable experimental features
   experimental: {
     // Enable server components logging in development
-    logging: {
-      level: 'verbose',
-    },
   },
   
   // Image optimization
