@@ -193,20 +193,27 @@ async function main() {
   });
 
   // Create Admin User
-  await prisma.user.upsert({
-    where: { phone: '+1234567890' },
-    update: {},
-    create: {
-      id: 'admin-1',
-      name: 'Admin User',
-      username: 'admin',
-      phone: '+1234567890',
-      email: 'admin@idfecharity.org',
-      password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
-      role: 'admin',
-      isActive: true,
-    },
+  const existingUserByPhone = await prisma.user.findUnique({
+    where: { phone: '+1234567890' }
   });
+  
+  const existingUserByUsername = await prisma.user.findUnique({
+    where: { username: 'admin' }
+  });
+  
+  if (!existingUserByPhone && !existingUserByUsername) {
+    await prisma.user.create({
+      data: {
+        name: 'Admin User',
+        username: 'admin',
+        phone: '+1234567890',
+        email: 'admin@idfecharity.org',
+        password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+        role: 'admin',
+        isActive: true,
+      }
+    });
+  }
 
   console.log('✅ Database seeded successfully!');
 }
