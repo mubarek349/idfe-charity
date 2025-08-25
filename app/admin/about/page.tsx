@@ -1,8 +1,20 @@
 "use client";
 
-
 import { useState, useEffect } from "react";
-
+import {
+  Button,
+  Input,
+  Textarea,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
+  Card,
+  CardBody,
+  CardHeader,
+} from "@heroui/react";
 import toast from "react-hot-toast";
 
 export default function AboutAdmin() {
@@ -134,11 +146,33 @@ export default function AboutAdmin() {
     });
   };
 
-  const removeValue = (index: number) => {
-    setAboutData({
+  const removeValue = async (index: number) => {
+    const newAboutData = {
       ...aboutData,
       values: aboutData.values.filter((_: any, i: number) => i !== index),
-    });
+    };
+    setAboutData(newAboutData);
+    
+    // Auto-save after deletion
+    try {
+      const method = aboutData.id ? "PUT" : "POST";
+      const response = await fetch("/api/admin/about", {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newAboutData),
+      });
+      
+      if (response.ok) {
+        toast.success("Value removed successfully!");
+      } else {
+        toast.error("Error removing value");
+      }
+    } catch (error) {
+      console.error("Error removing value:", error);
+      toast.error("Error removing value");
+    }
   };
 
   const updateValue = (
@@ -172,186 +206,265 @@ export default function AboutAdmin() {
         <div className="flex space-x-3">
           {isEditing ? (
             <>
-              <button
-                onClick={() => setIsEditing(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
+              <Button variant="bordered" onClick={() => setIsEditing(false)}>
                 Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={isSaving}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
-              >
+              </Button>
+              <Button color="primary" onClick={handleSave} isLoading={isSaving}>
                 {isSaving ? "Saving..." : "Save Changes"}
-              </button>
+              </Button>
             </>
           ) : (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
-            >
+            <Button color="primary" onClick={() => setIsEditing(true)}>
               Edit Content
-            </button>
+            </Button>
           )}
         </div>
       </div>
 
       <div className="space-y-8">
         {/* Main Content */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Main Content
-          </h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Title
-              </label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={aboutData.title}
-                  onChange={(e) =>
-                    setAboutData({ ...aboutData, title: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              ) : (
-                <p className="text-gray-900">{aboutData.title}</p>
-              )}
-            </div>
+        <Card>
+          <CardHeader>
+            <h2 className="text-xl font-semibold">Main Content</h2>
+          </CardHeader>
+          <CardBody className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Title
+                </label>
+                {isEditing ? (
+                  <Input
+                    value={aboutData.title}
+                    onChange={(e) =>
+                      setAboutData({ ...aboutData, title: e.target.value })
+                    }
+                    size="lg"
+                    classNames={{
+                      input: "px-4 py-3",
+                      inputWrapper: "px-4 py-3",
+                    }}
+                  />
+                ) : (
+                  <p className="text-gray-900 px-4 py-3">{aboutData.title}</p>
+                )}
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
-              </label>
-              {isEditing ? (
-                <textarea
-                  value={aboutData.description}
-                  onChange={(e) =>
-                    setAboutData({ ...aboutData, description: e.target.value })
-                  }
-                  rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              ) : (
-                <p className="text-gray-700">{aboutData.description}</p>
-              )}
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description
+                </label>
+                {isEditing ? (
+                  <Textarea
+                    value={aboutData.description}
+                    onChange={(e) =>
+                      setAboutData({
+                        ...aboutData,
+                        description: e.target.value,
+                      })
+                    }
+                    minRows={4}
+                    size="lg"
+                    classNames={{
+                      input: "px-4 py-3",
+                      inputWrapper: "px-4 py-3",
+                    }}
+                  />
+                ) : (
+                  <p className="text-gray-700 px-4 py-3">
+                    {aboutData.description}
+                  </p>
+                )}
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Mission
-              </label>
-              {isEditing ? (
-                <textarea
-                  value={aboutData.mission}
-                  onChange={(e) =>
-                    setAboutData({ ...aboutData, mission: e.target.value })
-                  }
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              ) : (
-                <p className="text-gray-700">{aboutData.mission}</p>
-              )}
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Mission
+                </label>
+                {isEditing ? (
+                  <Textarea
+                    value={aboutData.mission}
+                    onChange={(e) =>
+                      setAboutData({ ...aboutData, mission: e.target.value })
+                    }
+                    minRows={3}
+                    size="lg"
+                    classNames={{
+                      input: "px-4 py-3",
+                      inputWrapper: "px-4 py-3",
+                    }}
+                  />
+                ) : (
+                  <p className="text-gray-700 px-4 py-3">{aboutData.mission}</p>
+                )}
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Vision
-              </label>
-              {isEditing ? (
-                <textarea
-                  value={aboutData.vision}
-                  onChange={(e) =>
-                    setAboutData({ ...aboutData, vision: e.target.value })
-                  }
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              ) : (
-                <p className="text-gray-700">{aboutData.vision}</p>
-              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Vision
+                </label>
+                {isEditing ? (
+                  <Textarea
+                    value={aboutData.vision}
+                    onChange={(e) =>
+                      setAboutData({ ...aboutData, vision: e.target.value })
+                    }
+                    minRows={3}
+                    size="lg"
+                    classNames={{
+                      input: "px-4 py-3",
+                      inputWrapper: "px-4 py-3",
+                    }}
+                  />
+                ) : (
+                  <p className="text-gray-700 px-4 py-3">{aboutData.vision}</p>
+                )}
+              </div>
             </div>
-          </div>
-        </div>
+          </CardBody>
+        </Card>
 
         {/* Values */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">Our Values</h2>
+        <Card>
+          <CardHeader className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold">Our Values</h2>
             {isEditing && (
-              <button
-                onClick={addValue}
-                className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
-              >
+              <Button color="success" size="sm" onClick={addValue}>
                 Add Value
-              </button>
+              </Button>
             )}
-          </div>
-          <div className="space-y-4">
+          </CardHeader>
+          <CardBody className="space-y-4">
             {aboutData.values.map((value: any, index: number) => (
-              <div
+              <ValueCard
                 key={index}
-                className="border border-gray-200 rounded-lg p-4"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Title
-                    </label>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={value.title}
-                        onChange={(e) =>
-                          updateValue(index, "title", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    ) : (
-                      <h3 className="font-semibold text-gray-900">
-                        {value.title}
-                      </h3>
-                    )}
-                  </div>
-                  {isEditing && (
-                    <button
-                      onClick={() => {
-                        if (confirm('Are you sure you want to remove this value?')) {
-                          removeValue(index);
-                        }
-                      }}
-                      className="ml-2 px-2 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Description
-                  </label>
-                  {isEditing ? (
-                    <textarea
-                      value={value.description}
-                      onChange={(e) =>
-                        updateValue(index, "description", e.target.value)
-                      }
-                      rows={2}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  ) : (
-                    <p className="text-gray-600">{value.description}</p>
-                  )}
-                </div>
-              </div>
+                value={value}
+                index={index}
+                isEditing={isEditing}
+                updateValue={updateValue}
+                removeValue={removeValue}
+              />
             ))}
-          </div>
-        </div>
+          </CardBody>
+        </Card>
       </div>
     </div>
+  );
+}
+function ValueCard({
+  value,
+  index,
+  isEditing,
+  updateValue,
+  removeValue,
+}: {
+  value: any;
+  index: number;
+  isEditing: boolean;
+  updateValue: (
+    index: number,
+    field: "title" | "description",
+    value: string
+  ) => void;
+  removeValue: (index: number) => Promise<void>;
+}) {
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+
+  return (
+    <>
+      <Card className="border">
+        <CardBody>
+          <div className="flex justify-between items-start mb-4">
+            <div className="flex-1 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Title
+                </label>
+                {isEditing ? (
+                  <Input
+                    value={value.title}
+                    onChange={(e) =>
+                      updateValue(index, "title", e.target.value)
+                    }
+                    size="lg"
+                    classNames={{
+                      input: "px-4 py-3",
+                      inputWrapper: "px-4 py-3",
+                    }}
+                  />
+                ) : (
+                  <h3 className="font-semibold text-gray-900 px-4 py-3">
+                    {value.title}
+                  </h3>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description
+                </label>
+                {isEditing ? (
+                  <Textarea
+                    value={value.description}
+                    onChange={(e) =>
+                      updateValue(index, "description", e.target.value)
+                    }
+                    minRows={2}
+                    size="lg"
+                    classNames={{
+                      input: "px-4 py-3",
+                      inputWrapper: "px-4 py-3",
+                    }}
+                  />
+                ) : (
+                  <p className="text-gray-600 px-4 py-3">{value.description}</p>
+                )}
+              </div>
+            </div>
+            {isEditing && (
+              <Button
+                color="danger"
+                size="sm"
+                onClick={onOpen}
+                className="ml-4"
+              >
+                Remove
+              </Button>
+            )}
+          </div>
+        </CardBody>
+      </Card>
+
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Confirm Deletion
+              </ModalHeader>
+              <ModalBody>
+                <p>
+                  Are you sure you want to remove this value? This action cannot
+                  be undone.
+                </p>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="default" variant="light" onPress={onClose}>
+                  Cancel
+                </Button>
+                <Button
+                  color="danger"
+                  onPress={() => {
+                    removeValue(index);
+                    onClose();
+                  }}
+                >
+                  Delete
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+    </>
   );
 }

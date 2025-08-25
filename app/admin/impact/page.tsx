@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { Button, Input, Textarea, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Card, CardBody, CardHeader } from '@heroui/react';
 import toast from 'react-hot-toast';
 
 export default function ImpactAdmin() {
@@ -66,9 +67,6 @@ export default function ImpactAdmin() {
   };
 
   const handleDeleteStat = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this statistic?')) {
-      return;
-    }
     try {
       const response = await fetch(`/api/admin/impact?id=${id}`, {
         method: 'DELETE',
@@ -115,27 +113,27 @@ export default function ImpactAdmin() {
         <div className="flex space-x-3">
           {isEditing ? (
             <>
-              <button
+              <Button
+                variant="bordered"
                 onClick={() => setIsEditing(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                color="primary"
                 onClick={handleSave}
-                disabled={isSaving}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+                isLoading={isSaving}
               >
                 {isSaving ? 'Saving...' : 'Save Changes'}
-              </button>
+              </Button>
             </>
           ) : (
-            <button
+            <Button
+              color="primary"
               onClick={() => setIsEditing(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
             >
               Edit Content
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -146,164 +144,233 @@ export default function ImpactAdmin() {
         </div>
       ) : (
       <div className="space-y-8">
-        {/* Current Statistics */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Current Impact Statistics</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {stats.map((stat) => (
-              <div key={stat.id} className="border border-gray-200 rounded-lg p-4 relative">
-                {isEditing && (
-                  <button
-                    onClick={() => handleDeleteStat(stat.id)}
-                    className="absolute top-2 right-2 text-red-500 hover:text-red-700"
-                  >
-                    ✕
-                  </button>
-                )}
-                <div className="space-y-3">
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={stat.icon}
-                      onChange={(e) => handleUpdateStat(stat.id, 'icon', e.target.value)}
-                      className="text-2xl w-16 border border-gray-300 rounded px-2 py-1"
-                    />
-                  ) : (
-                    <span className="text-2xl">{stat.icon}</span>
-                  )}
-                  
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={stat.value}
-                      onChange={(e) => handleUpdateStat(stat.id, 'value', e.target.value)}
-                      className="text-3xl font-bold text-gray-900 w-full border border-gray-300 rounded px-2 py-1"
-                    />
-                  ) : (
-                    <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
-                  )}
-                  
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={stat.title}
-                      onChange={(e) => handleUpdateStat(stat.id, 'title', e.target.value)}
-                      className="text-lg font-semibold text-gray-800 w-full border border-gray-300 rounded px-2 py-1"
-                    />
-                  ) : (
-                    <p className="text-lg font-semibold text-gray-800">{stat.title}</p>
-                  )}
-                  
-                  {isEditing ? (
-                    <textarea
-                      value={stat.description || ''}
-                      onChange={(e) => handleUpdateStat(stat.id, 'description', e.target.value)}
-                      className="text-sm text-gray-600 w-full border border-gray-300 rounded px-2 py-1"
-                      rows={2}
-                    />
-                  ) : (
-                    <p className="text-sm text-gray-600">{stat.description}</p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <Card>
+          <CardHeader>
+            <h2 className="text-xl font-semibold">Current Impact Statistics</h2>
+          </CardHeader>
+          <CardBody>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {stats.map((stat) => (
+                <StatCard
+                  key={stat.id}
+                  stat={stat}
+                  isEditing={isEditing}
+                  handleUpdateStat={handleUpdateStat}
+                  handleDeleteStat={handleDeleteStat}
+                />
+              ))}
+            </div>
+          </CardBody>
+        </Card>
 
-        {/* Add New Statistic */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">Add New Statistic</h2>
-            <button
+        <Card>
+          <CardHeader className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold">Add New Statistic</h2>
+            <Button
+              color={showAddForm ? "default" : "primary"}
               onClick={() => setShowAddForm(!showAddForm)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
               {showAddForm ? 'Cancel' : 'Add Statistic'}
-            </button>
-          </div>
-          
-          {showAddForm && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Title
-                  </label>
-                  <input
-                    type="text"
+            </Button>
+          </CardHeader>
+          <CardBody>
+            {showAddForm && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input
+                    label="Title"
                     value={newStat.title}
                     onChange={(e) => setNewStat({...newStat, title: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Lives Impacted"
+                    size="lg"
+                    classNames={{
+                      input: "px-4 py-3",
+                      inputWrapper: "px-4 py-3"
+                    }}
                   />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Value
-                  </label>
-                  <input
-                    type="text"
+                  <Input
+                    label="Value"
                     value={newStat.value}
                     onChange={(e) => setNewStat({...newStat, value: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="10,000+"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description
-                </label>
-                <textarea
-                  value={newStat.description}
-                  onChange={(e) => setNewStat({...newStat, description: e.target.value})}
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="People who have benefited from our programs"
-                />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Icon (Emoji)
-                  </label>
-                  <input
-                    type="text"
-                    value={newStat.icon}
-                    onChange={(e) => setNewStat({...newStat, icon: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="👥"
+                    size="lg"
+                    classNames={{
+                      input: "px-4 py-3",
+                      inputWrapper: "px-4 py-3"
+                    }}
                   />
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Order
-                  </label>
-                  <input
+                <Textarea
+                  label="Description"
+                  value={newStat.description}
+                  onChange={(e) => setNewStat({...newStat, description: e.target.value})}
+                  placeholder="People who have benefited from our programs"
+                  minRows={2}
+                  size="lg"
+                  classNames={{
+                    input: "px-4 py-3",
+                    inputWrapper: "px-4 py-3"
+                  }}
+                />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input
+                    label="Icon (Emoji)"
+                    value={newStat.icon}
+                    onChange={(e) => setNewStat({...newStat, icon: e.target.value})}
+                    placeholder="👥"
+                    size="lg"
+                    classNames={{
+                      input: "px-4 py-3",
+                      inputWrapper: "px-4 py-3"
+                    }}
+                  />
+                  <Input
+                    label="Order"
                     type="number"
-                    value={newStat.order}
+                    value={newStat.order.toString()}
                     onChange={(e) => setNewStat({...newStat, order: parseInt(e.target.value) || 0})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    size="lg"
+                    classNames={{
+                      input: "px-4 py-3",
+                      inputWrapper: "px-4 py-3"
+                    }}
                   />
                 </div>
+                
+                <Button
+                  color="success"
+                  onClick={handleAddStat}
+                  isDisabled={isSaving || !newStat.title || !newStat.value}
+                  isLoading={isSaving}
+                  size="lg"
+                >
+                  {isSaving ? 'Adding...' : 'Add Statistic'}
+                </Button>
               </div>
-              
-              <button
-                onClick={handleAddStat}
-                disabled={isSaving || !newStat.title || !newStat.value}
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
-              >
-                {isSaving ? 'Adding...' : 'Add Statistic'}
-              </button>
-            </div>
-          )}
-        </div>
+            )}
+          </CardBody>
+        </Card>
       </div>
       )}
     </div>
+  );
+}
+
+function StatCard({ stat, isEditing, handleUpdateStat, handleDeleteStat }: {
+  stat: any;
+  isEditing: boolean;
+  handleUpdateStat: (id: string, field: string, value: string) => void;
+  handleDeleteStat: (id: string) => void;
+}) {
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+
+  return (
+    <>
+      <Card className="border relative">
+        <CardBody>
+          {isEditing && (
+            <Button
+              isIconOnly
+              color="danger"
+              size="sm"
+              onClick={onOpen}
+              className="absolute top-2 right-2 z-10"
+            >
+              ✕
+            </Button>
+          )}
+          <div className="space-y-3">
+            {isEditing ? (
+              <Input
+                value={stat.icon}
+                onChange={(e) => handleUpdateStat(stat.id, 'icon', e.target.value)}
+                size="sm"
+                className="w-16"
+                classNames={{
+                  input: "text-2xl text-center px-2 py-1",
+                  inputWrapper: "px-2 py-1"
+                }}
+              />
+            ) : (
+              <span className="text-2xl">{stat.icon}</span>
+            )}
+            
+            {isEditing ? (
+              <Input
+                value={stat.value}
+                onChange={(e) => handleUpdateStat(stat.id, 'value', e.target.value)}
+                size="lg"
+                classNames={{
+                  input: "text-3xl font-bold px-4 py-3",
+                  inputWrapper: "px-4 py-3"
+                }}
+              />
+            ) : (
+              <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+            )}
+            
+            {isEditing ? (
+              <Input
+                value={stat.title}
+                onChange={(e) => handleUpdateStat(stat.id, 'title', e.target.value)}
+                size="lg"
+                classNames={{
+                  input: "text-lg font-semibold px-4 py-3",
+                  inputWrapper: "px-4 py-3"
+                }}
+              />
+            ) : (
+              <p className="text-lg font-semibold text-gray-800">{stat.title}</p>
+            )}
+            
+            {isEditing ? (
+              <Textarea
+                value={stat.description || ''}
+                onChange={(e) => handleUpdateStat(stat.id, 'description', e.target.value)}
+                minRows={2}
+                size="lg"
+                classNames={{
+                  input: "text-sm px-4 py-3",
+                  inputWrapper: "px-4 py-3"
+                }}
+              />
+            ) : (
+              <p className="text-sm text-gray-600">{stat.description}</p>
+            )}
+          </div>
+        </CardBody>
+      </Card>
+
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Confirm Deletion
+              </ModalHeader>
+              <ModalBody>
+                <p>Are you sure you want to delete this statistic? This action cannot be undone.</p>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="default" variant="light" onPress={onClose}>
+                  Cancel
+                </Button>
+                <Button
+                  color="danger"
+                  onPress={() => {
+                    handleDeleteStat(stat.id);
+                    onClose();
+                  }}
+                >
+                  Delete
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+    </>
   );
 }

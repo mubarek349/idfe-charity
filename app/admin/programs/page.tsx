@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-
+import { Button, Input, Textarea, Select, SelectItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Card, CardBody, CardHeader, Chip } from '@heroui/react';
+import toast from 'react-hot-toast';
 
 interface Program {
   id?: string;
@@ -21,7 +22,7 @@ export default function ProgramsAdmin() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingProgram, setEditingProgram] = useState<Program | null>(null);
-  const [message, setMessage] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const [formData, setFormData] = useState<Program>({
     title: '',
@@ -46,11 +47,11 @@ export default function ProgramsAdmin() {
       if (response.ok) {
         setPrograms(data);
       } else {
-        setMessage(data.error || 'Error loading programs');
+        toast.error(data.error || 'Error loading programs');
       }
     } catch (error) {
       console.error('Error fetching programs:', error);
-      setMessage('Error loading programs');
+      toast.error('Error loading programs');
     } finally {
       setLoading(false);
     }
@@ -58,7 +59,7 @@ export default function ProgramsAdmin() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage('');
+    setIsSaving(true);
 
     try {
       const method = editingProgram ? 'PUT' : 'POST';
@@ -74,17 +75,19 @@ export default function ProgramsAdmin() {
       
       const result = await response.json();
       if (response.ok) {
-        setMessage(editingProgram ? 'Program updated successfully!' : 'Program created successfully!');
+        toast.success(editingProgram ? 'Program updated successfully!' : 'Program created successfully!');
         setShowForm(false);
         setEditingProgram(null);
         resetForm();
         fetchPrograms();
       } else {
-        setMessage(result.error || 'Error saving program');
+        toast.error(result.error || 'Error saving program');
       }
     } catch (error) {
       console.error('Error saving program:', error);
-      setMessage('Error saving program');
+      toast.error('Error saving program');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -99,8 +102,6 @@ export default function ProgramsAdmin() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this program?')) return;
-
     try {
       const response = await fetch(`/api/admin/programs?id=${id}`, {
         method: 'DELETE',
@@ -108,14 +109,14 @@ export default function ProgramsAdmin() {
       
       const result = await response.json();
       if (response.ok) {
-        setMessage('Program deleted successfully!');
+        toast.success('Program deleted successfully!');
         fetchPrograms();
       } else {
-        setMessage(result.error || 'Error deleting program');
+        toast.error(result.error || 'Error deleting program');
       }
     } catch (error) {
       console.error('Error deleting program:', error);
-      setMessage('Error deleting program');
+      toast.error('Error deleting program');
     }
   };
 
@@ -133,8 +134,7 @@ export default function ProgramsAdmin() {
     });
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+  const handleChange = (name: string, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -155,248 +155,272 @@ export default function ProgramsAdmin() {
             Manage your charity programs and initiatives
           </p>
         </div>
-        <button
+        <Button
+          color="primary"
           onClick={() => {
             setShowForm(true);
             setEditingProgram(null);
             resetForm();
           }}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
         >
           Add New Program
-        </button>
+        </Button>
       </div>
-
-      {message && (
-        <div className={`mb-6 p-4 rounded-md ${
-          message.includes('Error') 
-            ? 'bg-red-50 text-red-700 border border-red-200' 
-            : 'bg-green-50 text-green-700 border border-green-200'
-        }`}>
-          {message}
-        </div>
-      )}
 
       {/* Program Form */}
       {showForm && (
-        <div className="mb-8 bg-white shadow rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">
+        <Card className="mb-8">
+          <CardHeader>
+            <h2 className="text-lg font-medium">
               {editingProgram ? 'Edit Program' : 'Add New Program'}
             </h2>
-          </div>
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <div>
-                <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                  Program Title
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  id="title"
+          </CardHeader>
+          <CardBody>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <Input
+                  label="Program Title"
                   value={formData.title}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  required
+                  onChange={(e) => handleChange('title', e.target.value)}
+                  isRequired
+                  size="lg"
+                  classNames={{
+                    input: "px-4 py-3",
+                    inputWrapper: "px-4 py-3"
+                  }}
                 />
-              </div>
-
-              <div>
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-                  Category
-                </label>
-                <input
-                  type="text"
-                  name="category"
-                  id="category"
+                <Input
+                  label="Category"
                   value={formData.category}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  onChange={(e) => handleChange('category', e.target.value)}
                   placeholder="e.g., Education, Healthcare"
-                  required
+                  isRequired
+                  size="lg"
+                  classNames={{
+                    input: "px-4 py-3",
+                    inputWrapper: "px-4 py-3"
+                  }}
                 />
               </div>
-            </div>
 
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                Description
-              </label>
-              <textarea
-                name="description"
-                id="description"
-                rows={4}
+              <Textarea
+                label="Description"
                 value={formData.description}
-                onChange={handleChange}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-              <div>
-                <label htmlFor="status" className="block text-sm font-medium text-gray-700">
-                  Status
-                </label>
-                <select
-                  name="status"
-                  id="status"
-                  value={formData.status}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="completed">Completed</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="targetGroup" className="block text-sm font-medium text-gray-700">
-                  Target Group
-                </label>
-                <input
-                  type="text"
-                  name="targetGroup"
-                  id="targetGroup"
-                  value={formData.targetGroup}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="e.g., Children, Elderly"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-                  Location
-                </label>
-                <input
-                  type="text"
-                  name="location"
-                  id="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="e.g., Global, Africa"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <div>
-                <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">
-                  Start Date
-                </label>
-                <input
-                  type="date"
-                  name="startDate"
-                  id="startDate"
-                  value={formData.startDate}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="endDate" className="block text-sm font-medium text-gray-700">
-                  End Date
-                </label>
-                <input
-                  type="date"
-                  name="endDate"
-                  id="endDate"
-                  value={formData.endDate}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700">
-                Image URL (Optional)
-              </label>
-              <input
-                type="url"
-                name="imageUrl"
-                id="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleChange}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="https://example.com/image.jpg"
-              />
-            </div>
-
-            <div className="flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowForm(false);
-                  setEditingProgram(null);
-                  resetForm();
+                onChange={(e) => handleChange('description', e.target.value)}
+                minRows={4}
+                isRequired
+                size="lg"
+                classNames={{
+                  input: "px-4 py-3",
+                  inputWrapper: "px-4 py-3"
                 }}
-                className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-              >
-                {editingProgram ? 'Update Program' : 'Create Program'}
-              </button>
-            </div>
-          </form>
-        </div>
+              />
+
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+                <Select
+                  label="Status"
+                  selectedKeys={[formData.status]}
+                  onSelectionChange={(keys) => handleChange('status', Array.from(keys)[0] as string)}
+                  size="lg"
+                  classNames={{
+                    trigger: "px-4 py-3"
+                  }}
+                >
+                  <SelectItem key="active">Active</SelectItem>
+                  <SelectItem key="inactive">Inactive</SelectItem>
+                  <SelectItem key="completed">Completed</SelectItem>
+                </Select>
+
+                <Input
+                  label="Target Group"
+                  value={formData.targetGroup || ''}
+                  onChange={(e) => handleChange('targetGroup', e.target.value)}
+                  placeholder="e.g., Children, Elderly"
+                  size="lg"
+                  classNames={{
+                    input: "px-4 py-3",
+                    inputWrapper: "px-4 py-3"
+                  }}
+                />
+
+                <Input
+                  label="Location"
+                  value={formData.location || ''}
+                  onChange={(e) => handleChange('location', e.target.value)}
+                  placeholder="e.g., Global, Africa"
+                  size="lg"
+                  classNames={{
+                    input: "px-4 py-3",
+                    inputWrapper: "px-4 py-3"
+                  }}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <Input
+                  label="Start Date"
+                  type="date"
+                  value={formData.startDate || ''}
+                  onChange={(e) => handleChange('startDate', e.target.value)}
+                  size="lg"
+                  classNames={{
+                    input: "px-4 py-3",
+                    inputWrapper: "px-4 py-3"
+                  }}
+                />
+
+                <Input
+                  label="End Date"
+                  type="date"
+                  value={formData.endDate || ''}
+                  onChange={(e) => handleChange('endDate', e.target.value)}
+                  size="lg"
+                  classNames={{
+                    input: "px-4 py-3",
+                    inputWrapper: "px-4 py-3"
+                  }}
+                />
+              </div>
+
+              <Input
+                label="Image URL (Optional)"
+                type="url"
+                value={formData.imageUrl || ''}
+                onChange={(e) => handleChange('imageUrl', e.target.value)}
+                placeholder="https://example.com/image.jpg"
+                size="lg"
+                classNames={{
+                  input: "px-4 py-3",
+                  inputWrapper: "px-4 py-3"
+                }}
+              />
+
+              <div className="flex justify-end space-x-3">
+                <Button
+                  variant="bordered"
+                  onClick={() => {
+                    setShowForm(false);
+                    setEditingProgram(null);
+                    resetForm();
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  color="primary"
+                  type="submit"
+                  isLoading={isSaving}
+                >
+                  {editingProgram ? 'Update Program' : 'Create Program'}
+                </Button>
+              </div>
+            </form>
+          </CardBody>
+        </Card>
       )}
 
       {/* Programs List */}
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">Current Programs</h2>
-        </div>
-        <div className="divide-y divide-gray-200">
+      <Card>
+        <CardHeader>
+          <h2 className="text-lg font-medium">Current Programs</h2>
+        </CardHeader>
+        <CardBody className="divide-y divide-gray-200">
           {programs.map((program) => (
-            <div key={program.id} className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3">
-                    <h3 className="text-lg font-medium text-gray-900">{program.title}</h3>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      program.status === 'active' ? 'bg-green-100 text-green-800' :
-                      program.status === 'completed' ? 'bg-blue-100 text-blue-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {program.status}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-sm text-gray-600">{program.description}</p>
-                  <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500">
-                    <span>Category: {program.category}</span>
-                    {program.location && <span>Location: {program.location}</span>}
-                    {program.targetGroup && <span>Target: {program.targetGroup}</span>}
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => handleEdit(program)}
-                    className="text-blue-600 hover:text-blue-900 text-sm font-medium"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(program.id!)}
-                    className="text-red-600 hover:text-red-900 text-sm font-medium"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            </div>
+            <ProgramCard
+              key={program.id}
+              program={program}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
           ))}
+        </CardBody>
+      </Card>
+    </div>
+  );
+}
+
+function ProgramCard({ program, onEdit, onDelete }: {
+  program: Program;
+  onEdit: (program: Program) => void;
+  onDelete: (id: string) => void;
+}) {
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'success';
+      case 'completed': return 'primary';
+      default: return 'default';
+    }
+  };
+
+  return (
+    <>
+      <div className="py-6">
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <div className="flex items-center space-x-3">
+              <h3 className="text-lg font-medium text-gray-900">{program.title}</h3>
+              <Chip color={getStatusColor(program.status)} size="sm">
+                {program.status}
+              </Chip>
+            </div>
+            <p className="mt-1 text-sm text-gray-600">{program.description}</p>
+            <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500">
+              <span>Category: {program.category}</span>
+              {program.location && <span>Location: {program.location}</span>}
+              {program.targetGroup && <span>Target: {program.targetGroup}</span>}
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              size="sm"
+              variant="light"
+              color="primary"
+              onClick={() => onEdit(program)}
+            >
+              Edit
+            </Button>
+            <Button
+              size="sm"
+              variant="light"
+              color="danger"
+              onClick={onOpen}
+            >
+              Delete
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
+
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Confirm Deletion
+              </ModalHeader>
+              <ModalBody>
+                <p>Are you sure you want to delete the program "{program.title}"? This action cannot be undone.</p>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="default" variant="light" onPress={onClose}>
+                  Cancel
+                </Button>
+                <Button
+                  color="danger"
+                  onPress={() => {
+                    onDelete(program.id!);
+                    onClose();
+                  }}
+                >
+                  Delete
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+    </>
   );
 }
