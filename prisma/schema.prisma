@@ -13,3 +13,124 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+// Content Management Models
+model HeroContent {
+  id          String   @id @default(cuid())
+  title       String
+  subtitle    String
+  description String   @db.Text
+  buttonText  String
+  buttonLink  String
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("hero_content")
+}
+
+model AboutContent {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  mission     String   @db.Text
+  vision      String   @db.Text
+  values      Json // Array of value objects
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("about_content")
+}
+
+model Program {
+  id          String    @id @default(cuid())
+  title       String
+  description String    @db.Text
+  imageUrl    String?
+  category    String
+  status      String    @default("active") // active, inactive, completed
+  targetGroup String?
+  location    String?
+  startDate   DateTime?
+  endDate     DateTime?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("programs")
+}
+
+model ImpactStat {
+  id          String   @id @default(cuid())
+  title       String
+  value       String
+  description String?
+  icon        String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("impact_stats")
+}
+
+model ContactInfo {
+  id          String   @id @default(cuid())
+  address     String
+  phone       String
+  email       String
+  website     String?
+  socialMedia Json // Object with social media links
+  mapUrl      String?  @db.Text
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("contact_info")
+}
+
+model CTAContent {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  buttonText  String
+  buttonLink  String
+  bgColor     String?
+  textColor   String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("cta_content")
+}
+
+model FooterContent {
+  id          String   @id @default(cuid())
+  description String   @db.Text
+  quickLinks  Json // Array of link objects
+  socialLinks Json // Array of social media links
+  copyright   String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("footer_content")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String?
+  username String? @unique
+  name      String
+  phone     String   @unique
+  role      String   @default("admin") // admin, editor, viewer
+  password  String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}

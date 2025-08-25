@@ -34,10 +34,19 @@ A modern, professional web application built with Next.js, React, and Tailwind C
 ```bash
 # Clone the repository
 git clone <your-repo-url>
-cd chatapp
+cd "IDFE Charity"
 
 # Install dependencies
 npm install
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your database URL and other settings
+
+# Set up database
+npx prisma generate
+npx prisma db push
+npx prisma db seed
 
 # Start development server
 npm run dev
@@ -49,14 +58,32 @@ npm run build
 npm start
 ```
 
+### Database Management
+```bash
+# Generate Prisma client
+npx prisma generate
+
+# Push schema changes to database
+npx prisma db push
+
+# Seed database with initial data
+npm run db:seed
+
+# View database in Prisma Studio
+npx prisma studio
+```
+
 ## 🛠️ Technology Stack
 
 - **Frontend**: Next.js 15, React 19
 - **Styling**: Tailwind CSS 4
-- **Icons**: Heroicons React
-- **UI Components**: Headless UI
+- **Icons**: Heroicons React, Lucide React
+- **UI Components**: Headless UI, Radix UI
 - **Language**: TypeScript
-- **Database**: Prisma (configured)
+- **Database**: Prisma with MySQL
+- **Authentication**: NextAuth.js
+- **Notifications**: React Hot Toast
+- **Forms**: React Hook Form with Zod validation
 
 ## 📱 Usage
 
@@ -93,19 +120,42 @@ The application uses a green-based color scheme:
 - Secondary: Green-50 (#f0fdf4)
 - Accent: Blue-50 (#eff6ff)
 
+## 🔌 API Routes
+
+### Public API
+- `GET /api/content` - Fetch all website content
+
+### Admin API
+- `GET|POST|PUT /api/admin/hero` - Hero section management
+- `GET|POST|PUT /api/admin/about` - About section management
+- `GET|POST|PUT|DELETE /api/admin/programs` - Programs management
+- `GET|POST|PUT|DELETE /api/admin/impact` - Impact statistics management
+- `GET|POST|PUT /api/admin/contact` - Contact information management
+- `GET|POST|PUT /api/admin/cta` - Call-to-action management
+- `GET|POST|PUT /api/admin/footer` - Footer content management
+
 ## 🔧 Development
 
 ### File Structure
 ```
-chatapp/
-├── app/                 # Next.js app directory
-├── components/          # React components
-│   ├── LeftSidebar.tsx # Main sidebar component
-│   ├── Navbar.tsx      # Navigation bar
-│   ├── Footer.tsx      # Footer with time
-│   └── ...            # Other components
-├── lib/                # Utility functions
-└── public/             # Static assets
+IDFE Charity/
+├── app/                    # Next.js app directory
+│   ├── admin/              # Admin panel pages
+│   ├── api/                # API routes
+│   │   ├── admin/          # Admin API endpoints
+│   │   └── content/        # Public content API
+│   ├── layout.tsx          # Root layout
+│   └── page.tsx            # Home page
+├── components/             # React components
+│   ├── ui/                 # UI components
+│   ├── LeftSidebar.tsx     # Main sidebar
+│   ├── Navbar.tsx          # Navigation bar
+│   ├── Footer.tsx          # Footer with time
+│   └── ...                 # Other components
+├── actions/                # Server actions
+├── lib/                    # Utility functions
+├── prisma/                 # Database schema & migrations
+└── public/                 # Static assets
 ```
 
 ### Key Components

@@ -1,10 +1,7 @@
-"use client";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import LeftSidebar from "@/components/LeftSidebar";
-import { useState } from "react";
-import Navbar from "@/components/Navbar";
+import ClientLayout from "@/components/ClientLayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,9 +13,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const metadata: Metadata = {
+export const metadata: Metadata = {
   title: "IDFE Charity",
-  description: "IDFE Charity",
+  description: "IDFE Charity - Professional Chat Application",
 };
 
 export default function RootLayout({
@@ -26,22 +23,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const handleSidebarToggle = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <LeftSidebar isOpen={sidebarOpen} onToggle={handleSidebarToggle} />
-        <main className="flex flex-col min-h-screen">
-          <Navbar onSidebarToggle={handleSidebarToggle} />
-          <div className="flex-1">{children}</div>
-        </main>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );

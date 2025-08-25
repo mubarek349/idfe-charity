@@ -1,22 +1,46 @@
-export default function Hero() {
+interface HeroData {
+  title: string;
+  subtitle: string;
+  description: string;
+  buttonText: string;
+  buttonLink: string;
+  imageUrl?: string;
+}
+
+export default function Hero({ data }: { data?: HeroData | null }) {
+  const defaultData = {
+    title: "Making a Difference",
+    subtitle: "Together",
+    description: "Join us in our mission to create positive change in communities around the world. Every donation, every volunteer hour, every act of kindness makes a difference.",
+    buttonText: "Donate Now",
+    buttonLink: "#contact"
+  };
+
+  const content = data || defaultData;
+
   return (
     <section id="home" className="relative bg-gradient-to-br from-green-50 to-blue-50 py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-            Making a <span className="text-green-600">Difference</span> Together
+            {content.title} <span className="text-green-600">{content.subtitle}</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Join us in our mission to create positive change in communities around the world. 
-            Every donation, every volunteer hour, every act of kindness makes a difference.
+            {content.description}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition duration-300 shadow-lg">
-              Donate Now
-            </button>
-            <button className="border-2 border-green-600 text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition duration-300">
+            <a 
+              href={content.buttonLink}
+              className="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition duration-300 shadow-lg inline-block"
+            >
+              {content.buttonText}
+            </a>
+            <a 
+              href="#about"
+              className="border-2 border-green-600 text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition duration-300 inline-block"
+            >
               Learn More
-            </button>
+            </a>
           </div>
         </div>
       </div>

@@ -1,7 +1,15 @@
 "use client";
 import { useState, useEffect } from 'react';
 
-export default function Footer() {
+interface FooterData {
+  id?: string;
+  description: string;
+  quickLinks: Array<{ title: string; url: string }>;
+  socialLinks: Array<{ platform: string; url: string; icon: string }>;
+  copyright: string;
+}
+
+export default function Footer({ data }: { data?: FooterData | null }) {
   const [currentDate, setCurrentDate] = useState<string>('');
 
   useEffect(() => {
@@ -22,7 +30,7 @@ export default function Footer() {
           <div>
             <h3 className="text-xl font-bold text-green-400 mb-4">IDFE Charity</h3>
             <p className="text-gray-300">
-              Making a difference in communities around the world through sustainable development programs.
+              {data?.description || "Making a difference in communities around the world through sustainable development programs."}
             </p>
           </div>
           <div>
@@ -66,7 +74,7 @@ export default function Footer() {
         </div>
         <div className="border-t border-gray-800 mt-8 pt-8 text-center">
           <p className="text-gray-400 mb-3">
-            © {currentDate} IDFE Charity. All rights reserved. | Privacy Policy | Terms of Service
+            {data?.copyright || `© ${currentDate} IDFE Charity. All rights reserved.`} | Privacy Policy | Terms of Service
           </p>
           
         </div>

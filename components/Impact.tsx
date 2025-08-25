@@ -1,4 +1,13 @@
-export default function Impact() {
+interface ImpactStat {
+  id?: string;
+  title: string;
+  value: string;
+  description?: string;
+  icon?: string;
+  order?: number;
+}
+
+export default function Impact({ data }: { data?: ImpactStat[] }) {
   return (
     <section id="impact" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -11,22 +20,17 @@ export default function Impact() {
           </p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          <div>
-            <div className="text-4xl md:text-5xl font-bold text-green-600 mb-2">15,000+</div>
-            <div className="text-gray-600">Children Educated</div>
-          </div>
-          <div>
-            <div className="text-4xl md:text-5xl font-bold text-blue-600 mb-2">25,000+</div>
-            <div className="text-gray-600">Lives Improved</div>
-          </div>
-          <div>
-            <div className="text-4xl md:text-5xl font-bold text-purple-600 mb-2">100+</div>
-            <div className="text-gray-600">Projects Completed</div>
-          </div>
-          <div>
-            <div className="text-4xl md:text-5xl font-bold text-orange-600 mb-2">$2M+</div>
-            <div className="text-gray-600">Funds Raised</div>
-          </div>
+          {(data && data.length > 0 ? data : [
+            { title: "Children Educated", value: "15,000+", icon: "📚" },
+            { title: "Lives Improved", value: "25,000+", icon: "❤️" },
+            { title: "Projects Completed", value: "100+", icon: "✅" },
+            { title: "Funds Raised", value: "$2M+", icon: "💰" }
+          ]).map((stat: ImpactStat, index: number) => (
+            <div key={index}>
+              <div className="text-4xl md:text-5xl font-bold text-green-600 mb-2">{stat.value}</div>
+              <div className="text-gray-600">{stat.title}</div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
