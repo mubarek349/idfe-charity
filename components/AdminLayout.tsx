@@ -1,36 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname } from "next/navigation";
-import LeftSidebar from "@/components/LeftSidebar";
-import Navbar from "@/components/Navbar";
-import ErrorBoundary from "@/components/ErrorBoundary";
+import AdminSidebar from "@/components/AdminSidebar";
+import AdminNavbar from "@/components/AdminNavbar";
 import { Toaster } from "react-hot-toast";
 
-export default function ClientLayout({
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const pathname = usePathname();
-  const isAdminRoute = pathname?.startsWith('/admin');
 
   const handleSidebarToggle = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  // For admin routes, return children without main site navigation
-  if (isAdminRoute) {
-    return (
-      <ErrorBoundary>
-        {children}
-      </ErrorBoundary>
-    );
-  }
-
   return (
-    <ErrorBoundary>
+    <>
       <Toaster 
         position="bottom-right" 
         toastOptions={{ 
@@ -41,7 +28,7 @@ export default function ClientLayout({
           },
           success: {
             style: {
-              background: '#059669',
+              background: '#2563eb',
             },
           },
           error: {
@@ -52,11 +39,15 @@ export default function ClientLayout({
         }} 
         reverseOrder={false} 
       />
-      <LeftSidebar isOpen={sidebarOpen} onToggle={handleSidebarToggle} />
+      <AdminSidebar isOpen={sidebarOpen} onToggle={handleSidebarToggle} />
       <main className="flex flex-col min-h-screen">
-        <Navbar onSidebarToggle={handleSidebarToggle} />
-        <div className="flex-1">{children}</div>
+        <AdminNavbar onSidebarToggle={handleSidebarToggle} />
+        <div className="flex-1 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {children}
+          </div>
+        </div>
       </main>
-    </ErrorBoundary>
+    </>
   );
 }
