@@ -1,4 +1,4 @@
-import { PrismaClient } from '../app/generated/prisma';
+import { PrismaClient } from '../prisma/generated/client';
 
 // Extend global type for Prisma Client singleton
 declare global {
