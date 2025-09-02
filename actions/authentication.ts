@@ -185,7 +185,7 @@ export async function getCurrentUser(): Promise<UserData> {
 }
 
 // Helper function for redirecting unauthenticated users
-export async function requireAuthentication(redirectTo = "/en/login") {
+export async function requireAuthentication(redirectTo = "/login") {
   const isAuth = await checkAuthentication()
 
   if (!isAuth) {
