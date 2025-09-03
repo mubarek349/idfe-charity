@@ -249,7 +249,7 @@ async function main() {
         username: "admin",
         phone: "0942303571",
         email: "admin@idfecharity.org",
-        password: "admin",
+        password: "admin123",
         role: "admin",
         isActive: true,
       },
