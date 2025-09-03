@@ -74,7 +74,7 @@ export default function HomeContent() {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://mubarek.online');
         const response = await fetch(`${baseUrl}/api/content`);
         if (response.ok) {
           const fetchedData = await response.json();
